@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8" />
+        <title>Neuro-Evolution of Augmenting Topologies (NEAT)</title>
+        <style>
+            canvas {
+                background: #212121;
+                display: block;
+                margin: 0 auto;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="ViewCanvas"></canvas>
+
+        <script src="neat/algorithm.js"></script>
+        <script src="neat/graphics.js"></script>
+        
+        <script>
+            // canvas
+            const canvas = document.getElementById("ViewCanvas");
+            const ctx = canvas.getContext("2d");
+
+            // initialize canvas size
+            canvas.width = window.innerWidth - 20;
+            canvas.height = window.innerHeight - 20;
+
+            // make a network
+            let net = new Network();
+
+            // add sensors nodes
+            const s = 5
+            for (let i = 0; i < s; i++) {
+                net.addNode(-1, SENSOR);
+            }
+
+            // add output nodes
+            const o = 3
+            for (let i = 0; i < o; i++) {
+                net.addNode(-1, OUTPUT);
+            }
+
+            // build some crazy network
+            const n = 15;
+            while (net.gene.nodes.length < o + s + n) {
+                // pick action
+                i = Math.floor(Math.random() * 10);
+
+                // add node
+                if (i > 5 && net.gene.connections.length > 0) {
+                    j = Math.floor(Math.random() * net.gene.connections.length);
+                    net.addNode(j);
+                }
+                // add connection
+                else {
+                    let nLen = net.gene.nodes.length;
+                    j = Math.floor(Math.random() * nLen);
+                    k = Math.floor(Math.random() * nLen);
+
+                    if (j != k && !(j < s && k < s) && !(j > nLen - o - 2 && k > nLen - o - 2)) {
+                        net.addConnection(j, k, Math.random() * 2 - 1);
+                    }
+                }
+            }
+
+            // log gene
+            console.log(net.gene)
+
+            // setup rendering
+            let render = new Renderer(net.gene);
+
+            // render loop
+            function update() {
+                // clear
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // update nodes
+                render.update();
+
+                // draw
+                render.draw(canvas.width, canvas.height, ctx)
+            }
+            
+            // dynamic resizing canvas
+            function resizeCanvas() {
+                canvas.width = window.innerWidth - 20;
+                canvas.height = window.innerHeight - 20;
+
+                // rerender
+            }
+
+            // event listeners
+            window.addEventListener('resize', resizeCanvas, false);
+
+            // run update
+            setInterval(update, 10);
+        </script>
+    </body>
+</html>
